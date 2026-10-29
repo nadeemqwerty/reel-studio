@@ -1,0 +1,23 @@
+{
+  "id": "move-zeroes",
+  "algorithm": "move-zeroes",
+  "title": "Move Zeroes",
+  "audience": "Candidates refreshing a familiar interview pattern",
+  "objective": "Understand stable in-place compaction using scan and write pointers",
+  "language": "en",
+  "input": [0, 1, 0, 3, 12],
+  "challenge": [0, 0, 5],
+  "constraints": "0 <= n <= 100000; signed 32-bit integers; mutate the same array",
+  "timeLimitSeconds": 1,
+  "targetDurationSeconds": 60,
+  "brand": "PATTERN REFRESH",
+  "callToAction": "Save it. Then try the next example.",
+  "narration": {
+    "hook": "Zeroes last. Keep other numbers in order.",
+    "setup": "The scan pointer reads. The write pointer marks the next slot.",
+    "zero": "Zero. Move only the scan pointer.",
+    "swap": "Found {value}. Swap it into the waiting slot. Then advance both pointers.",
+    "summary": "Reading and placing in the same order preserves the sequence. One pass. Constant extra space.",
+    "challenge": "Your turn. Where does the five belong?"
+  }
+}

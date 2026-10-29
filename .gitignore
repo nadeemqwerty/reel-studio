@@ -1,0 +1,12 @@
+node_modules/
+.cache/
+outputs/
+.env
+.env.*
+!.env.example
+*.log
+*.mp4
+*.wav
+*.mp3
+*.zip
+local-settings.json

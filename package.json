@@ -1,0 +1,25 @@
+{
+  "name": "reel-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent-directed, deterministic, silent-first educational video production.",
+  "license": "MIT",
+  "engines": {"node": ">=20"},
+  "scripts": {
+    "setup": "node scripts/reel.mjs setup",
+    "plan": "node scripts/reel.mjs plan",
+    "build": "node scripts/reel.mjs build",
+    "test": "node --test",
+    "check": "node --check lib/core.mjs && node --check scripts/reel.mjs",
+    "review": "node scripts/reel.mjs review"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.537",
+    "@remotion/renderer": "4.0.537",
+    "ffmpeg-static": "5.3.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537"
+  }
+}
