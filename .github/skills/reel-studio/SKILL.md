@@ -24,6 +24,32 @@ OpenArt is an optional asset supplier, never the algorithm or motion authority.
 
 ## Workflow
 
+### Configured production (preferred)
+
+Read `docs/production-workflow.md` and `examples/production.json`. Use
+`npm run studio -- doctor` for prerequisites, and `plan <configuration>` for a
+validated output matrix before rendering. Setup/installations stay explicit.
+Use `smoke <configuration>` for short four-format/two-locale diagnostics.
+Use `build <configuration> --only portrait:en-IN,landscape:hi-IN` for selected
+full outputs; omitting `--only` builds every configured output.
+Finish with `review <configuration>` and the requirement-to-evidence checklist.
+
+The locale `terms` map owns the displayed/spoken read pointer r and write
+pointer w names. Do not invent colour or scan-pointer aliases. Introduce the
+problem, expected result and variables before the walkthrough. Preserve
+identities and identical geometry between neutral clips and text overlays.
+Reflow format-specific layouts rather than cropping a portrait export.
+Watermarks must stay in the reserved header strip and never enter neutral media.
+Keep generic brand clips separate from problem-specific opening explanations.
+
+`npm run studio -- package` creates the transferable source archive. Document
+fresh installation and verified host platforms; never copy virtualenvs or
+machine-specific browser settings as a portable installation. Do not claim
+macOS/Linux E2E verification from a Windows run. Configuration, commands and
+the skill must suffice without conversation history.
+
+### Legacy single-format workflow
+
 1. **Brief:** create or edit an example JSON following `examples/move-zeroes.json`.
    Use original/licensed content. Separate teaching labels, narration and subtitles.
 2. **Plan:** `npm run plan -- examples/move-zeroes.json`.
@@ -45,6 +71,37 @@ OpenArt is an optional asset supplier, never the algorithm or motion authority.
    narration and final-render caches. Never reuse an approval after its asset changes.
 8. **Deliver:** report output path, duration, narration provider, actual external
    costs, review scope and unresolved issues. No automatic upload or publishing.
+
+### Regional workflow
+
+Prefer this opt-in path when the user wants natural-voice candidates or reusable
+regional assets. Read `docs/regional-production-plan.md` and retain its critic
+acceptance matrix. Plan, obtain any requested independent critique, then track
+implementation and E2E evidence; do not claim a role-switch is independent review.
+
+1. Keep the canonical brief unchanged; edit `examples/move-zeroes.locales.json`
+   for regional teaching strings and spoken phrases. Only `en-IN` and `hi-IN`
+   are supported. All visible strings, including numerals, are overlay content.
+2. With installation approval, run `npm run regional:setup`. This creates an
+   isolated optional Python runtime and verifies downloaded model/font hashes.
+   Never install or download silently during a build.
+3. Run `npm run regional:build -- examples/move-zeroes.json examples/move-zeroes.locales.json`.
+   Append a single locale if needed. Rendered neutral clips, not generative video,
+   supply the motion under exact-coordinate text overlays.
+4. Review `outputs/<id>/regional/base/style.png`, `visual-master.mp4` and both
+   locale directories. Neutral means **no text, numerals, logos or audio**;
+   localized `silent.mp4` intentionally retains readable teaching text.
+5. Preserve actual phrase sample timestamps. Retrospective step narration starts
+   after the action; extend only the final hold, never slow motion or rush speech.
+   Inspect swaps, pointer movement, hold entry/exit and the final audio tail.
+   Index/pointer annotations may be occluded by a passing tile, but must not
+   change logical position early or appear as duplicate token values.
+6. Record reuse, failures, versions, hashes and actual costs in lifecycle/history.
+   English Kokoro `af_heart` is US-accented despite India distribution; Hindi
+   `hf_alpha` needs native listening. Do not call either voice approved without
+   listening. There is no fallback to the old Windows demo voice.
+7. Keep Instagram accounts, credentials and publishing outside this workflow
+   until the user explicitly requests and approves that integration.
 
 The command examples use relative paths; adapt separators for the host OS.
 `outputs/` is private and ignored by Git. Do not stage account data, tokens,

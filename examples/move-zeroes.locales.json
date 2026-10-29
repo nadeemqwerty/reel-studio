@@ -1,0 +1,70 @@
+{
+  "en-IN": {
+    "locale": "en-IN", "brand": "PATTERN REFRESH", "voice": "af_heart", "language": "en-us",
+    "accent": "American English; India distribution, not an Indian-accent voice",
+    "terms": {
+      "read": {"id": "r", "label": "read pointer r", "spoken": "read pointer R"},
+      "write": {"id": "w", "label": "write pointer w", "spoken": "write pointer W"}
+    },
+    "ui": {
+      "pattern": "TWO POINTERS", "input": "INPUT", "goal": "GOAL: KEEP NON-ZERO ORDER",
+      "scan": "{readPointer}: checks the next value",
+      "write": "{writePointer}: next non-zero slot",
+      "swap": "Swap indices {r} and {w}.", "stay": "Keep {writePointer} in place.",
+      "swapRule": "Swap first. Then advance both pointers.", "zeroRule": "The array does not change.",
+      "prefix": "Green outline = completed non-zero prefix",
+      "order": "Read left to right. Place in the same order.", "complexity": "O(n) time / O(1) extra space",
+      "rule": "Zero: advance r only. Non-zero: swap, advance r and w.",
+      "challenge": "Where should the non-zero value go?", "cta": "Save it. Try this example.", "complete": "Read pointer r reached the end.",
+      "problem": "Move all zeroes last. Preserve non-zero order. Modify the same array.",
+      "variables": "nums = input array; n = its length. Indices start at 0.",
+      "initial": "Initially: r = 0, w = 0.",
+      "output": "EXPECTED OUTPUT",
+      "constraints": "0 <= n <= 100000; 32-bit integers; target: 1 second.",
+      "outro": "Save. Practice. Repeat."
+    },
+    "scenes": {
+      "hook": {"title": "MOVE ZEROES.", "subtitle": "KEEP THE ORDER.", "phrases": ["Move zeroes last. Keep the other values in order.", "Change the same array; do not make a new one."]},
+      "setup": {"title": "TWO POINTERS.", "subtitle": "START BOTH AT ZERO.", "phrases": ["The {readPointer} checks the next value.", "The {writePointer} marks the next non-zero slot."]},
+      "zero": {"title": "SEE A ZERO?", "subtitle": "ADVANCE ONLY r.", "phrases": ["Only the {readPointer} moved.", "The {writePointer} stayed in place."]},
+      "swap": {"title": "FOUND {value}.", "subtitle": "SWAP IT FORWARD.", "phrases": ["We moved {value} forward, then advanced both pointers."]},
+      "self": {"title": "FOUND {value}.", "subtitle": "ALREADY IN PLACE.", "phrases": ["This value was already in place. Both pointers advanced."]},
+      "summary": {"title": "WHY IT WORKS.", "subtitle": "ONE PASS.", "phrases": ["Reading left to right preserves the non-zero order.", "One pass, with no extra array."]},
+      "challenge": {"title": "YOUR TURN.", "subtitle": "WHAT CHANGES?", "phrases": ["Try this array. Which value moves first?"]}
+    }
+  },
+  "hi-IN": {
+    "locale": "hi-IN", "brand": "PATTERN REFRESH", "voice": "hf_alpha", "language": "hi",
+    "accent": "Hindi candidate; native listening review required",
+    "terms": {
+      "read": {"id": "r", "label": "रीड पॉइंटर r", "spoken": "रीड पॉइंटर आर"},
+      "write": {"id": "w", "label": "राइट पॉइंटर w", "spoken": "राइट पॉइंटर डब्ल्यू"}
+    },
+    "ui": {
+      "pattern": "दो संकेतक", "input": "शुरुआत", "goal": "लक्ष्य: गैर-शून्य संख्याओं का क्रम न बदले",
+      "scan": "{readPointer}: अगली संख्या जाँचें",
+      "write": "{writePointer}: अगली गैर-शून्य संख्या की जगह",
+      "swap": "स्थान {r} और {w} की संख्याएँ बदलें।", "stay": "{writePointer} को वहीं रखें।",
+      "swapRule": "पहले अदला-बदली, फिर दोनों संकेतक आगे।", "zeroRule": "ऐरे में कोई बदलाव नहीं।",
+      "prefix": "हरी सीमा = सही जगह रखी गैर-शून्य संख्याएँ",
+      "order": "बाएँ से दाएँ पढ़ें और उसी क्रम में रखें।", "complexity": "O(n) समय / O(1) अतिरिक्त जगह",
+      "rule": "शून्य: केवल r आगे। बाकी: अदला-बदली, फिर आगे।",
+      "challenge": "गैर-शून्य संख्या किस जगह जाएगी?", "cta": "सेव करें। अब यह उदाहरण हल करें।", "complete": "रीड पॉइंटर r अंत तक पहुँचा।",
+      "problem": "शून्य अंत में रखें। बाकी का क्रम न बदलें। उसी ऐरे में बदलाव करें।",
+      "variables": "nums = ऐरे; n = उसकी लंबाई। इंडेक्स 0 से शुरू हैं।",
+      "initial": "शुरुआत: r = 0, w = 0।",
+      "output": "अपेक्षित परिणाम",
+      "constraints": "0 <= n <= 100000; 32-बिट पूर्णांक; लक्ष्य: 1 सेकंड।",
+      "outro": "सेव करें। अभ्यास करें।"
+    },
+    "scenes": {
+      "hook": {"title": "शून्य अंत में।", "subtitle": "बाकी संख्याओं का क्रम वही।", "phrases": ["शून्य अंत में रखें, बाकी संख्याओं का क्रम न बदलें।", "उसी ऐरे में बदलाव करें, नया ऐरे न बनाएँ।"]},
+      "setup": {"title": "दो पॉइंटर।", "subtitle": "दोनों 0 से शुरू।", "phrases": ["{readPointer} अगली संख्या जाँचता है।", "{writePointer} अगली गैर-शून्य संख्या की जगह है।"]},
+      "zero": {"title": "शून्य मिला?", "subtitle": "केवल r आगे।", "phrases": ["केवल {readPointer} आगे बढ़ा।", "{writePointer} वहीं रहा।"]},
+      "swap": {"title": "{value} मिला।", "subtitle": "इसे आगे की जगह दें।", "phrases": ["{value} आगे आया, फिर दोनों संकेतक आगे बढ़े।"]},
+      "self": {"title": "{value} मिला।", "subtitle": "यह सही जगह पर है।", "phrases": ["संख्या सही जगह थी। दोनों संकेतक आगे बढ़े।"]},
+      "summary": {"title": "यह सही क्यों है?", "subtitle": "एक बार जाँच।", "phrases": ["बाएँ से दाएँ रखने पर संख्याओं का क्रम बना रहता है।", "एक बार जाँच, बिना किसी अतिरिक्त ऐरे के।"]},
+      "challenge": {"title": "अब आपकी बारी।", "subtitle": "क्या बदलेगा?", "phrases": ["इस ऐरे को देखें। कौन सी संख्या पहले आगे जाएगी?"]}
+    }
+  }
+}

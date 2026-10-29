@@ -102,31 +102,36 @@ async function addNarration(project, out) {
     quality: imported ? 'requires-listening-review' : 'offline-demo-voice-not-studio-quality', externalCredits: 0};
 }
 
-function inspectEncoded(video, expectedSeconds, needsAudio) {
+function inspectEncoded(video, expectedSeconds, needsAudio, dimensions = {width: 1080, height: 1920}) {
   const result = spawnSync(ffmpeg, ['-hide_banner', '-i', video], {encoding: 'utf8', windowsHide: true});
   if (result.error) throw result.error;
   const info = result.stderr;
   const match = /Duration: (\d+):(\d+):([\d.]+)/.exec(info);
-  if (!match || !/1080x1920/.test(info) || !/30 fps/.test(info)) throw new Error(`Unexpected media metadata: ${info}`);
+  if (!match || !new RegExp(`\\b${dimensions.width}x${dimensions.height}\\b`).test(info) || !/30 fps/.test(info)) throw new Error(`Unexpected media metadata: ${info}`);
   const duration = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
   if (Math.abs(duration - expectedSeconds) > 0.1) throw new Error(`Duration mismatch: ${duration}`);
   const hasAudio = /Audio:/.test(info);
   if (needsAudio && !hasAudio) throw new Error('Narrated export has no audio stream.');
-  execute(ffmpeg, ['-v', 'error', '-i', video, '-f', 'null', '-']);
-  return {duration, width: 1080, height: 1920, fps: 30, hasAudio, fullDecode: 'passed'};
+  if (!needsAudio && hasAudio) throw new Error('Silent export contains an unwanted audio stream.');
+  const decoded = execute(ffmpeg, ['-v', 'error', '-xerror', '-i', video, '-map', '0:v:0', '-map', '0:a?',
+    '-progress', 'pipe:1', '-nostats', '-f', 'null', '-']);
+  const frames = Number([...decoded.stdout.matchAll(/^frame=(\d+)/gm)].at(-1)?.[1]);
+  if (frames !== Math.round(expectedSeconds * FPS)) throw new Error(`Decoded frame count mismatch: ${frames}.`);
+  return {duration, width: dimensions.width, height: dimensions.height, fps: 30, frames, hasAudio, fullDecode: 'passed'};
 }
 
 async function evidence(project, out, video) {
   const dir = path.join(out, 'review');
   await fs.mkdir(dir, {recursive: true});
   execute(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', '-i', video,
-    '-vf', 'fps=1/6,scale=270:480,tile=5x2', '-frames:v', '1', path.join(dir, 'overview.png')]);
+    '-vf', `fps=10/${project.durationInFrames / FPS},scale=270:-2,tile=5x2`, '-frames:v', '1', path.join(dir, 'overview.png')]);
   const motionSheets = [];
   for (const scene of project.scenes.filter((s) => s.kind === 'step' && s.swap && s.w !== s.r)) {
     const start = scene.startFrame / FPS + 2;
     const filename = `${scene.id}-swap.png`;
     execute(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', '-ss', String(start), '-i', video,
-      '-vf', 'crop=880:720:60:570,scale=440:360,tile=5x5', '-frames:v', '1', path.join(dir, filename)]);
+      '-vf', project.production ? 'scale=384:-2,tile=5x5' : 'crop=880:720:60:570,scale=440:360,tile=5x5',
+      '-frames:v', '1', path.join(dir, filename)]);
     motionSheets.push({file: `review/${filename}`, startSeconds: start, decodedFrames: 25, fps: FPS});
   }
   return {overview: 'review/overview.png', motionSheets};
@@ -228,14 +233,18 @@ async function build() {
   }
 }
 
-try {
-  if (command === 'setup') await setup();
-  else if (command === 'plan' || command === 'build') await build();
-  else if (command === 'review') {
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(args[1] ?? '')) throw new Error('Provide the project id.');
-    console.log(JSON.stringify(await json(path.join(root, 'outputs', args[1], 'lifecycle.json')), null, 2));
-  } else throw new Error('Commands: setup, plan <spec.json>, build <spec.json>, review <project-id>.');
-} catch (error) {
-  console.error(error.stack);
-  process.exitCode = 1;
+export {browserPath, execute, inspectEncoded, evidence, hash, json, write, exists};
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    if (command === 'setup') await setup();
+    else if (command === 'plan' || command === 'build') await build();
+    else if (command === 'review') {
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(args[1] ?? '')) throw new Error('Provide the project id.');
+      console.log(JSON.stringify(await json(path.join(root, 'outputs', args[1], 'lifecycle.json')), null, 2));
+    } else throw new Error('Commands: setup, plan <spec.json>, build <spec.json>, review <project-id>.');
+  } catch (error) {
+    console.error(error.stack);
+    process.exitCode = 1;
+  }
 }

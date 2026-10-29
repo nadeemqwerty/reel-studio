@@ -10,9 +10,12 @@
     "setup": "node scripts/reel.mjs setup",
     "plan": "node scripts/reel.mjs plan",
     "build": "node scripts/reel.mjs build",
-    "test": "node --test",
-    "check": "node --check lib/core.mjs && node --check scripts/reel.mjs",
-    "review": "node scripts/reel.mjs review"
+    "test": "node --test test",
+    "check": "node --check lib/core.mjs && node --check lib/regional.mjs && node --check lib/production.mjs && node --check scripts/reel.mjs && node --check scripts/regional.mjs && node --check scripts/studio.mjs",
+    "review": "node scripts/reel.mjs review",
+    "regional:setup": "node scripts/regional.mjs setup",
+    "regional:build": "node scripts/regional.mjs build",
+    "studio": "node scripts/studio.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.537",

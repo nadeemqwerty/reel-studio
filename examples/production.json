@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "problem": "move-zeroes.json",
+  "locales": "move-zeroes.locales.json",
+  "maxDurationSeconds": 120,
+  "brand": {
+    "name": "PATTERN REFRESH",
+    "introSeconds": 1,
+    "outroSeconds": 2,
+    "watermark": {
+      "enabled": true,
+      "type": "text",
+      "text": "PATTERN REFRESH",
+      "position": "top-right",
+      "width": 240,
+      "opacity": 0.65
+    }
+  },
+  "outputs": [
+    {"format": "portrait", "locale": "en-IN"},
+    {"format": "portrait", "locale": "hi-IN"},
+    {"format": "landscape", "locale": "en-IN"},
+    {"format": "landscape", "locale": "hi-IN"},
+    {"format": "square", "locale": "en-IN"},
+    {"format": "square", "locale": "hi-IN"},
+    {"format": "feed", "locale": "en-IN"},
+    {"format": "feed", "locale": "hi-IN"}
+  ]
+}
