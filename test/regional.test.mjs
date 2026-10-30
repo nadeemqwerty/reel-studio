@@ -5,7 +5,8 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {compile, motion, validateProject} from '../lib/core.mjs';
-import {localize, applyTiming, neutralScene, geometry, canonicalFrame, validateLocale} from '../lib/regional.mjs';
+import {localize, applyTiming, neutralScene, geometry, canonicalFrame, validateLocale, resolveLocale} from '../lib/regional.mjs';
+import {prepareProduction} from '../lib/production.mjs';
 import {validCache} from '../scripts/regional.mjs';
 import {hash} from '../scripts/reel.mjs';
 
@@ -89,6 +90,37 @@ test('timing fails closed on early narration, oversized holds and final-scene tr
   final.challenge.cues[0].end = 7;
   const result = applyTiming(p, final);
   assert.ok(result.scenes.at(-1).seconds >= 7.6);
+});
+
+test('guided production removes idle tails without cutting speech or any action frame', () => {
+  const p = localize(prepareProduction(spec, {format: 'portrait', locale: 'en'}), resolveLocale(packs, 'en'));
+  const measured = audio(p, 8);
+  for (const item of Object.values(measured)) item.alignment = 'model-phoneme-sample-boundaries';
+  for (const [id, seconds] of [['hook', 6.4], ['setup', 9.2], ['step-1', 4.2], ['step-2', 4.4]]) {
+    measured[id] = {...audio(p, seconds)[id], alignment: 'model-phoneme-sample-boundaries'};
+  }
+  const result = applyTiming(p, measured, {maxExtraHoldSeconds: 8, maxDurationSeconds: 120});
+  assert.ok(result.scenes[0].durationInFrames < p.scenes[0].durationInFrames);
+  assert.ok(result.scenes[1].durationInFrames < p.scenes[1].durationInFrames);
+  for (const scene of result.scenes) {
+    assert.ok(scene.holdFrames >= 0);
+    assert.ok(scene.audioStart + scene.audioDuration + 0.2 <= scene.seconds + 1e-9);
+    if (scene.kind === 'step') {
+      const original = p.scenes.find((s) => s.id === scene.id);
+      const end = Math.ceil((scene.swap ? 4.6 : 2.1) * 30);
+      assert.ok(scene.durationInFrames > end);
+      for (let frame = 0; frame <= end; frame++) assert.deepEqual(motion(scene, frame), motion(original, frame));
+    }
+  }
+  assert.equal(validateProject(result).status, 'passed');
+  const unaligned = structuredClone(measured);
+  delete unaligned.hook.alignment;
+  assert.throws(() => applyTiming(p, unaligned), /model-aligned/);
+  const bad = structuredClone(packs['en-IN']);
+  bad.productionPhrases.swap = ['We moved {value} already.'];
+  assert.throws(() => validateLocale(bad), /already completed/);
+  assert.equal(localize(canonical, packs['en-IN']).scenes[2].audioStart, 2.1);
+  assert.equal(localize(prepareProduction(spec, {format: 'portrait'}), packs['hi-IN']).scenes[2].audioStart, 2.1);
 });
 
 test('phrase boundaries are honest, non-overlapping and share frame ownership with sidecars', () => {
@@ -189,4 +221,51 @@ test('neural preflight rejects absent glyphs rather than accepting silent font f
     const result = spawnSync(python, [path.join(root, 'scripts', 'narrate-neural.py'), request], {encoding: 'utf8'});
     assert.equal(result.status, 1);
     assert.match(result.stderr, /missing glyphs/);
+  });
+
+test('connected narration uses provider phrase boundaries and rejects missing or truncated timings',
+  {skip: process.env.REEL_NEURAL_TESTS !== '1'}, async () => {
+    const {python} = await import('../scripts/regional.mjs');
+    const provider = fileURLToPath(new URL('../scripts/narrate-neural.py', import.meta.url));
+    const result = spawnSync(python, ['-c', `
+import importlib.util, sys
+from types import SimpleNamespace
+spec = importlib.util.spec_from_file_location("narrator", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+class Engine:
+    has_timings = True
+    truncate = False
+    samples = 2000
+    tokenizer = SimpleNamespace(known=lambda text: text, phonemize=lambda text, lang: text)
+    def create_timed(self, text, **kwargs):
+        assert kwargs["continuous"] and kwargs["is_phonemes"]
+        spans = [SimpleNamespace(phoneme=c, start=i / 10, end=(i + 1) / 10) for i, c in enumerate(text)]
+        return [0.1] * self.samples, 1000, spans[:-1] if self.truncate else spans
+engine = Engine()
+job = {"phrases": ["Hi.", "Okay."], "voice": "af_heart", "language": "en-us",
+       "speed": 0.96, "sentencePause": 0.14, "clausePause": 0.06}
+samples, rate, cues = module.connected_speech(engine, job)
+assert cues == [{"text": "Hi.", "start": 0.0, "end": 0.3},
+                {"text": "Okay.", "start": 0.4, "end": 0.9}]
+engine.samples = 899
+assert module.connected_speech(engine, job)[2][-1]["end"] == 0.899
+engine.samples = 898
+try:
+    module.connected_speech(engine, job)
+except ValueError:
+    pass
+else:
+    raise AssertionError("More than one missing audio sample was accepted")
+engine.samples = 2000
+for no_timings, truncated in [(True, False), (False, True)]:
+    engine.has_timings, engine.truncate = not no_timings, truncated
+    try:
+        module.connected_speech(engine, job)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Invalid provider timings were accepted")
+`, provider], {encoding: 'utf8'});
+    assert.equal(result.status, 0, result.stderr);
   });

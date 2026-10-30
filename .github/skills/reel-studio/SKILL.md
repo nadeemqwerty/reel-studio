@@ -15,8 +15,10 @@ OpenArt is an optional asset supplier, never the algorithm or motion authority.
 1. Read the repository README and the user's problem specification.
 2. Confirm audience, learning objective, examples, duration, language, branding,
    narration source and publication destination. State any assumptions.
-3. Only Move Zeroes is implemented in this release. Do not label another algorithm
-   supported until its trace, renderer and focused tests are implemented.
+3. Supported algorithms are Move Zeroes, Remove Element and Remove Duplicates
+   from Sorted Array. The latter two return a valid prefix length and ignore the
+   tail; their lessons use swaps, not physical deletion or copy animation.
+   Do not label another algorithm supported without its trace and focused tests.
 4. Ask before edits, installations, paid calls, uploads, commits or publication
    unless the current user has already approved that exact scope.
 5. Run commands from the repository root. If this skill was linked/copied elsewhere,
@@ -29,10 +31,47 @@ OpenArt is an optional asset supplier, never the algorithm or motion authority.
 Read `docs/production-workflow.md` and `examples/production.json`. Use
 `npm run studio -- doctor` for prerequisites, and `plan <configuration>` for a
 validated output matrix before rendering. Setup/installations stay explicit.
-Use `smoke <configuration>` for short four-format/two-locale diagnostics.
-Use `build <configuration> --only portrait:en-IN,landscape:hi-IN` for selected
-full outputs; omitting `--only` builds every configured output.
-Finish with `review <configuration>` and the requirement-to-evidence checklist.
+Run `npm run validate` after setup or source/configuration changes. It must pass
+all integrations with no skips. Build and deliver verify its source/report
+fingerprints; a previous passing report is not enough.
+Use `smoke <configuration>` for short diagnostics of the configured outputs.
+The InterviewReel launch defaults to `portrait:en` and `landscape:en`.
+Use `build <configuration> --only portrait:en` for a selected full output;
+omitting `--only` builds every configured output.
+After packaging, run `review <configuration>` and the requirement-to-evidence
+checklist. `review` executes checks; use `status <configuration>` only for status.
+Use `deliver <configuration>` after a successful build for upload-ready videos,
+captions, reusable brand clips, avatar/banner/covers and upload metadata. This
+rejects stale configurations or changed final-video hashes and never uploads.
+The equivalent alias is `npm run verify:delivery -- <configuration>`. It verifies launch-file
+hashes, caption sidecars, silent/narrated video equality and lesson audio gaps.
+It also replays measured timing, verifies voice/reference and media hashes,
+checks motion-evidence coverage, and freshly decodes both final streams.
+Failed reviews overwrite current success with failure while retaining history.
+Packaging rejects a changed problem or locale pack even if the video hash matches.
+The persisted English voice profile limits lesson silence to 1.5 seconds at
+-40 dB (minimum detection 0.4 seconds), excluding silent intro/outro. Fix scripts
+or timing when it fails; do not silently relax the limit.
+Read the coverage table in the production guide. Do not mark listening,
+pronunciation, physical-device readability or publication approval as automated.
+The additional entry points are `examples/remove-element.production.json` and
+`examples/remove-duplicates.production.json`; both currently support English.
+The silent five-second outro thanks viewers and asks for likes, subscriptions
+and comments. Keep the app deferred until the video launch is delivered.
+Maintain the selected narrator across global-English videos and platforms:
+Kokoro `af_heart` / `en-us`, connected synthesis at speed 0.96, sentence pause
+0.14 seconds and clause pause 0.06 seconds. The approved reference and decision
+are in `assets/interviewreel/voice-reference.wav` and `voice.json`.
+English production uses guided `productionPhrases`, speaks during the action,
+and removes idle tails without cutting any motion frame. Preserve truthful
+instructions and model-aligned captions. A selected voice is not approval of
+every final video; review the actual complete export.
+Use `voice-sample examples/move-zeroes.voice-sample.json` to reproduce a local
+A/B comparison. This audio-only command never changes production settings or
+overwrites the approved reference asset.
+For an explicitly requested voice audition, add `--voice am_michael`. Overrides
+write to a voice-specific comparison folder and never change the production
+voice. Keep script and pacing identical when comparing narrator identities.
 
 The locale `terms` map owns the displayed/spoken read pointer r and write
 pointer w names. Do not invent colour or scan-pointer aliases. Introduce the
@@ -47,6 +86,52 @@ fresh installation and verified host platforms; never copy virtualenvs or
 machine-specific browser settings as a portable installation. Do not claim
 macOS/Linux E2E verification from a Windows run. Configuration, commands and
 the skill must suffice without conversation history.
+
+Use bounded frame parallelism, not simultaneous independent studio processes:
+bundles/public staging are shared. Browser reuse avoids per-screenshot startup.
+Benchmark `REEL_RENDER_CONCURRENCY` before increasing it; the local 2-versus-4
+trial favoured 2. Source-cache dependencies separate neutral geometry from
+narration and localization logic. Never remove correctness checks for speed.
+Text audits must wait for the custom font to load. Keep the cold first-frame
+landscape regression and genuine-overflow rejection; a warmed-up preview alone
+does not cover font startup. If shared-browser cleanup masks a render error,
+reproduce that exact frame with a Remotion-owned browser before changing layout.
+
+### Narrated stories and final handoff
+
+For the standalone channel intro and original driver heatmap, use
+`npm run story -- build examples/channel-intro.json` or
+`npm run story -- build examples/driver-heatmap.json`, then the corresponding
+`story -- review` command. Both require current `npm run validate` evidence.
+Keep builds sequential. Do not equate illustrative hexagons with real H3 cells
+or present the example stream/cache design as Uber's verified internal stack.
+Every format must include its cover and copy-ready title/description/caption/
+pinned-comment text. Run `node scripts/upload-index.mjs` after all five packages
+pass review. The index is local; cover selection and publishing remain manual.
+For upload handoff, provide the exact reviewed path and hash, not a generic
+`final.mp4` search. Historical regional outputs can retain obsolete terminology
+and long pauses despite newer launch files passing review. Never infer that a
+manually posted reel is the reviewed version; inspect the actual posted media
+when the user reports a discrepancy.
+
+Successful lesson/story reviews automatically refresh
+`studio_output/<topic>/<locale>/<orientation>/`. They include only `final.mp4`,
+`cover.png`, `title.txt`, `description.txt`, `caption.txt` and, for landscape,
+`thumbnail.png`. Verify sources against their manifest, and the final video
+against its successful review. Both descriptions and social captions must have
+topic hashtags. `uploadTextFiles` adds missing caption hashtags during source
+packaging; `writeUploadHandoff` verifies source hashes, metadata/text agreement,
+reviewed-video identity and exact destination inventories before completion.
+Exclude silent copies, previews, logs, manifests, optional subtitles, instructions
+and pinned-comment files. After verifying replacements, remove superseded loose
+orientation MP4s only when their hashes match the expected old handoff copies.
+Do not copy unreviewed legacy locales just to fill the locale matrix.
+Do not manually copy files into this handoff. Run `studio deliver` followed by
+`studio review` for lessons, or `story build` for stories. A successful review
+records the automatic handoff. The upload-index command can rebuild the five
+reviewed handoffs and links directly to their upload essentials.
+Remove legacy generated media only with explicit user authorization, using
+exact inspected paths and preserving current source, caches and review evidence.
 
 ### Legacy single-format workflow
 
@@ -80,8 +165,10 @@ acceptance matrix. Plan, obtain any requested independent critique, then track
 implementation and E2E evidence; do not claim a role-switch is independent review.
 
 1. Keep the canonical brief unchanged; edit `examples/move-zeroes.locales.json`
-   for regional teaching strings and spoken phrases. Only `en-IN` and `hi-IN`
-   are supported. All visible strings, including numerals, are overlay content.
+   for regional teaching strings and spoken phrases. Global English `en` reuses
+   the English pack; `en-IN` and `hi-IN` remain supported. The legacy regional
+   command defaults to the two pilot locales. All visible strings, including
+   numerals, are overlay content.
 2. With installation approval, run `npm run regional:setup`. This creates an
    isolated optional Python runtime and verifies downloaded model/font hashes.
    Never install or download silently during a build.

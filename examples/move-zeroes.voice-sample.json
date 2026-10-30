@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "production": "production.json",
+  "locale": "en",
+  "referenceSceneCount": 4,
+  "speed": 0.96,
+  "sentencePause": 0.14,
+  "clausePause": 0.06,
+  "phrases": [
+    "Let's move the zeroes without mixing up the other numbers.",
+    "Here's the trick: use two pointers.",
+    "The read pointer R checks each value.",
+    "The write pointer W marks the next non-zero slot.",
+    "See a zero? Move only the read pointer R.",
+    "Found a non-zero? Swap it forward, then move both pointers."
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "en": {
+    "locale": "en", "brand": "InterviewReel", "voice": "af_heart", "language": "en-us",
+    "accent": "American English; global English audience",
+    "terms": {
+      "read": {"id": "r", "label": "read pointer r", "spoken": "read pointer R"},
+      "write": {"id": "w", "label": "write pointer w", "spoken": "write pointer W"}
+    },
+    "ui": {
+      "pattern": "TWO POINTERS",
+      "input": "SORTED INPUT",
+      "goal": "KEEP EACH DISTINCT VALUE ONCE",
+      "scan": "{readPointer}: checks each value",
+      "write": "{writePointer}: next unique slot",
+      "swap": "New value: swap indices {r} and {w}.",
+      "stay": "Duplicate of last kept value; keep w in place.",
+      "swapRule": "Keep new value: swap first, then advance r and w.",
+      "zeroRule": "Duplicate: advance r only. No array change.",
+      "prefix": "Green outline = sorted unique prefix.",
+      "order": "Return k = {length}. Only the first k values count.",
+      "complexity": "O(n) time / O(1) extra space",
+      "rule": "Compare nums[r] with nums[w - 1], not nums[r - 1].",
+      "challenge": "Return k and the sorted unique prefix.",
+      "cta": "Comment both. Ignore all slots after the prefix.",
+      "complete": "Read pointer r reached the end.",
+      "problem": "Sorted input: keep each value once in place. Return k; ignore the tail.",
+      "variables": "nums = sorted input; n = length. Indices start at 0.",
+      "initial": "Start r = 0, w = 0. Keep first value when w = 0.",
+      "output": "FIRST {length} VALUES COUNT; TAIL IGNORED",
+      "constraints": "0 <= n <= 100000; sorted integers; target: 1 second.",
+      "outro": "Thanks for watching!\nLike and subscribe.\nComment your answer."
+    },
+    "productionPhrases": {
+      "hook": [
+        "This array is sorted. Keep each value just once.",
+        "Return the unique count, and ignore the remaining slots."
+      ],
+      "setup": [
+        "The {readPointer} checks each value.",
+        "The {writePointer} marks the next unique slot.",
+        "Start both at zero. Keep the first value.",
+        "Then compare each value with the last one we kept."
+      ],
+      "zero": [
+        "Here's {value} again. Skip this duplicate.",
+        "Move only the {readPointer}."
+      ],
+      "swap": [
+        "Here's a new value, {value}. Swap it into the next slot.",
+        "Then move both pointers to continue."
+      ],
+      "self": [
+        "Keep this {value}. It's already in the next unique slot.",
+        "Move both pointers to continue."
+      ],
+      "summary": [
+        "Return {length}. Each distinct value appears once in the prefix.",
+        "Compare with the last kept value, not the previous slot.",
+        "One pass, with no extra array."
+      ],
+      "challenge": [
+        "Try this sorted array. Which values should remain?",
+        "Comment the unique count and prefix."
+      ]
+    },
+    "scenes": {
+      "hook": {"title": "REMOVE DUPLICATES.", "subtitle": "FROM A SORTED ARRAY.", "phrases": ["Keep each distinct value once. Return the unique count."]},
+      "setup": {"title": "TWO POINTERS.", "subtitle": "COMPARE WITH LAST KEPT.", "phrases": ["The {readPointer} checks values.", "The {writePointer} marks the next unique slot."]},
+      "zero": {"title": "SKIP {value}.", "subtitle": "IT MATCHES LAST KEPT.", "phrases": ["We skipped this duplicate and advanced only read pointer R."]},
+      "swap": {"title": "KEEP {value}.", "subtitle": "A NEW DISTINCT VALUE.", "phrases": ["We kept the new value and advanced both pointers."]},
+      "self": {"title": "KEEP {value}.", "subtitle": "ALREADY IN PLACE.", "phrases": ["This distinct value was already in place."]},
+      "summary": {"title": "RETURN k = {length}.", "subtitle": "A SORTED UNIQUE PREFIX.", "phrases": ["Only the first k values count. The tail is ignored."]},
+      "challenge": {"title": "YOUR TURN.", "subtitle": "WHAT IS THE UNIQUE COUNT?", "phrases": ["Return the sorted unique prefix and its length."]}
+    }
+  }
+}

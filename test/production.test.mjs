@@ -5,12 +5,74 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {compile, motion, FPS} from '../lib/core.mjs';
-import {localize, neutralScene, geometry} from '../lib/regional.mjs';
-import {FORMATS, validateProduction, prepareProduction, shiftedCaptions, diagramTransform, previewSamples, previewFrame} from '../lib/production.mjs';
+import {localize, neutralScene, geometry, resolveLocale, validateLocale} from '../lib/regional.mjs';
+import {FORMATS, validateProduction, prepareProduction, shiftedCaptions, diagramTransform, previewSamples, previewFrame, assertSilenceBudget} from '../lib/production.mjs';
+import {renderConcurrency} from '../scripts/render-runtime.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../examples/production.json', import.meta.url)));
 const spec = JSON.parse(await fs.readFile(new URL('../examples/move-zeroes.json', import.meta.url)));
 const packs = JSON.parse(await fs.readFile(new URL('../examples/move-zeroes.locales.json', import.meta.url)));
+
+test('lesson review rejects excessive silence instead of only reporting it', () => {
+  assert.doesNotThrow(() => assertSilenceBudget(0.932104, 1.5));
+  assert.throws(() => assertSilenceBudget(5.887, 1.5), /silence/);
+  assert.throws(() => assertSilenceBudget(NaN, 1.5), /silence/);
+  assert.throws(() => assertSilenceBudget(0.9, undefined), /policy/);
+});
+
+test('validation evidence is portable but rejects source changes, altered reports and failed runs', async () => {
+  const {validationFingerprint, requireValidation, bytesHash} = await import('../scripts/validation-state.mjs');
+  const roots = ['first', 'relocated'].map((name) => fileURLToPath(new URL(`../.cache/studio-tests/validation/${name}/`, import.meta.url)));
+  for (const root of roots) {
+    for (const dir of ['lib', 'scripts', 'src', 'test', 'examples', 'assets/interviewreel', 'outputs']) {
+      await fs.mkdir(path.join(root, dir), {recursive: true});
+    }
+    for (const name of ['package.json', 'package-lock.json', 'assets/interviewreel/voice.json',
+      'assets/interviewreel/voice-reference.wav', 'src/example.jsx']) await fs.writeFile(path.join(root, name), name);
+    await fs.writeFile(path.join(root, 'outputs', 'validation-tests.xml'), 'passed fixture');
+  }
+  const fingerprint = await validationFingerprint(roots[0]);
+  assert.equal(await validationFingerprint(roots[1]), fingerprint);
+  const state = {stage: 'passed', sourceSha256: fingerprint, reportSha256: bytesHash('passed fixture')};
+  const file = path.join(roots[0], 'outputs', 'validation.json');
+  await fs.writeFile(file, JSON.stringify(state));
+  await requireValidation(roots[0]);
+  await fs.writeFile(path.join(roots[0], 'src', 'example.jsx'), 'changed');
+  await assert.rejects(() => requireValidation(roots[0]), /validate/);
+  await fs.writeFile(path.join(roots[0], 'src', 'example.jsx'), 'src/example.jsx');
+  await fs.writeFile(path.join(roots[0], 'outputs', 'validation-tests.xml'), 'changed report');
+  await assert.rejects(() => requireValidation(roots[0]), /validate/);
+  await fs.writeFile(path.join(roots[0], 'outputs', 'validation-tests.xml'), 'passed fixture');
+  await fs.writeFile(file, JSON.stringify({...state, stage: 'failed'}));
+  await assert.rejects(() => requireValidation(roots[0]), /validate/);
+});
+
+test('render worker policy respects CPU and free-memory budgets and rejects invalid overrides', () => {
+  assert.equal(renderConcurrency(null, 16, 8 * 1024 ** 3), 2);
+  assert.equal(renderConcurrency(null, 16, 3 * 1024 ** 3), 1);
+  assert.equal(renderConcurrency(null, 2, 8 * 1024 ** 3), 1);
+  assert.equal(renderConcurrency('6', 16, 8 * 1024 ** 3), 6);
+  for (const value of ['0', '17', '2.5', 'bad']) assert.throws(() => renderConcurrency(value, 16));
+  assert.throws(() => renderConcurrency('4', 2));
+});
+
+test('new lesson packs resolve return-length contracts and retain the selected voice', async () => {
+  for (const name of ['remove-element', 'remove-duplicates']) {
+    const lesson = JSON.parse(await fs.readFile(new URL(`../examples/${name}.json`, import.meta.url)));
+    const locales = JSON.parse(await fs.readFile(new URL(`../examples/${name}.locales.json`, import.meta.url)));
+    const production = JSON.parse(await fs.readFile(new URL(`../examples/${name}.production.json`, import.meta.url)));
+    validateProduction(production);
+    for (const output of production.outputs) {
+      const pack = resolveLocale(locales, output.locale);
+      const p = localize(prepareProduction(lesson, output), pack);
+      assert.equal(pack.voice, 'af_heart');
+      assert.equal(p.speechDelivery.mode, 'connected');
+      assert.match(p.ui.output, new RegExp(String(p.resultLength)));
+      assert.match(p.ui.problem, /ignore the tail/i);
+      assert.doesNotMatch(JSON.stringify(p.scenes.map((s) => [s.title, s.instruction, s.phrases])), /\{(?:target|length|value|r|w)\}/);
+    }
+  }
+});
 
 test('production rejects ambiguous outputs, invalid brands, unsafe profiles and unsupported schema', () => {
   assert.equal(validateProduction(config), config);
@@ -24,10 +86,25 @@ test('production rejects ambiguous outputs, invalid brands, unsafe profiles and 
     (c) => { c.brand.watermark.type = 'image'; c.brand.watermark.file = 'logo.svg'; },
     (c) => { c.brand.introSeconds = 0.01; },
     (c) => { c.brand.outroSeconds = 10; },
+    (c) => { c.launch.title = 'x'.repeat(101); },
+    (c) => { c.launch.bio = ''; },
   ]) {
     const invalid = structuredClone(config); change(invalid);
     assert.throws(() => validateProduction(invalid));
   }
+});
+
+test('global English reuses translations without relabelling regional packs or permitting mismatched voices', () => {
+  const en = resolveLocale(packs, 'en');
+  assert.equal(en.locale, 'en');
+  assert.equal(packs['en-IN'].locale, 'en-IN');
+  assert.deepEqual(en.scenes, packs['en-IN'].scenes);
+  assert.deepEqual(en.terms, packs['en-IN'].terms);
+  assert.notEqual(en.accent, packs['en-IN'].accent);
+  assert.equal(localize(prepareProduction(spec, {format: 'portrait'}), en).locale, 'en');
+  assert.throws(() => validateLocale({...en, voice: 'hf_alpha'}), /Voice/);
+  assert.throws(() => resolveLocale({en: packs['en-IN']}, 'en'), /must match/);
+  assert.throws(() => resolveLocale({}, 'en'), /Unsupported/);
 });
 
 test('new openings precede steps without changing canonical algorithm actions', () => {
@@ -130,7 +207,7 @@ test('invalid translation clears earlier production approval before neural setup
   await fs.writeFile(path.join(directory, 'problem.json'), JSON.stringify({...spec, id: 'studio-failure-fixture'}));
   const fixture = path.join(directory, 'production.json');
   await fs.writeFile(fixture, JSON.stringify({...config, problem: 'problem.json', locales: 'locales.json', outputs: [config.outputs[0]]}));
-  const delivery = path.join(root, 'outputs', 'studio-failure-fixture', 'studio', 'portrait', 'en-IN', 'delivery');
+  const delivery = path.join(root, 'outputs', 'studio-failure-fixture', 'studio', 'portrait', config.outputs[0].locale, 'delivery');
   await fs.mkdir(delivery, {recursive: true});
   await fs.writeFile(path.join(delivery, 'lifecycle.json'), JSON.stringify({stage: 'approved', review: {publishable: true}}));
   const result = spawnSync(process.execPath, [path.join(root, 'scripts', 'studio.mjs'), 'build', fixture], {encoding: 'utf8'});
@@ -139,6 +216,73 @@ test('invalid translation clears earlier production approval before neural setup
   assert.equal(record.stage, 'failed');
   assert.equal(record.review.publishable, false);
   assert.match(record.failure, /variables/);
+});
+
+test('launch packaging rejects stale branding, changed video bytes and unfinished deliveries', async () => {
+  const {assertDelivery} = await import('../scripts/studio.mjs');
+  const pack = resolveLocale(packs, 'en');
+  const record = {stage: 'awaiting-human-review', review: {automated: 'passed', publishable: false},
+    output: config.outputs[0], configuration: structuredClone(config), checks: {hasAudio: true},
+    brief: structuredClone(spec), localePack: structuredClone(pack), render: {sha256: 'verified-video'}};
+  assert.doesNotThrow(() => assertDelivery(record, config, config.outputs[0], 'verified-video', spec, pack));
+  assert.throws(() => assertDelivery(record, config, config.outputs[0], 'modified-video', spec, pack), /stale/);
+  for (const mutate of [
+    (r) => { r.configuration.brand.name = 'Old brand'; },
+    (r) => { r.stage = 'failed'; },
+    (r) => { r.review.automated = 'pending'; },
+    (r) => { r.output = {...r.output, locale: 'hi-IN'}; },
+    (r) => { r.brief.input = [9, 0]; },
+    (r) => { r.localePack.productionPhrases.hook = ['Changed script.']; },
+  ]) {
+    const invalid = structuredClone(record); mutate(invalid);
+    assert.throws(() => assertDelivery(invalid, config, config.outputs[0], 'verified-video', spec, pack), /stale/);
+  }
+});
+
+test('voice auditions reject unsafe IDs and missing flag values before producing audio', () => {
+  const cli = fileURLToPath(new URL('../scripts/studio.mjs', import.meta.url));
+  for (const args of [['--voice'], ['--voice', '../other']]) {
+    const result = spawnSync(process.execPath, [cli, 'voice-sample', ...args], {encoding: 'utf8'});
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /--voice needs|audition voice ID/);
+  }
+});
+
+test('review fails instead of merely reporting status when delivery evidence is missing', async () => {
+  const dir = fileURLToPath(new URL('../.cache/studio-tests/review/', import.meta.url));
+  await fs.mkdir(dir, {recursive: true});
+  const id = `review-incomplete-${process.pid}`;
+  const file = path.join(dir, 'production.json');
+  await fs.writeFile(path.join(dir, 'problem.json'), JSON.stringify({...spec, id}));
+  await fs.writeFile(path.join(dir, 'locales.json'), JSON.stringify(packs));
+  await fs.writeFile(file, JSON.stringify({...config, problem: './problem.json', locales: './locales.json'}));
+  const cli = fileURLToPath(new URL('../scripts/studio.mjs', import.meta.url));
+  const audit = fileURLToPath(new URL(`../outputs/${id}/studio/delivery-verification.json`, import.meta.url));
+  await fs.mkdir(path.dirname(audit), {recursive: true});
+  await fs.writeFile(audit, JSON.stringify({stage: 'awaiting-human-review', oldSuccessfulResult: true}));
+  const missing = spawnSync(process.execPath, [cli, 'review', file], {encoding: 'utf8'});
+  assert.notEqual(missing.status, 0);
+  assert.match(missing.stderr, /manifest.json/);
+  const failure = JSON.parse(await fs.readFile(audit));
+  assert.equal(failure.stage, 'failed');
+  assert.equal(failure.oldSuccessfulResult, undefined);
+  const launch = fileURLToPath(new URL(`../outputs/${id}/launch/`, import.meta.url));
+  await fs.mkdir(launch, {recursive: true});
+  await fs.writeFile(path.join(launch, 'manifest.json'), JSON.stringify({stage: 'awaiting-human-review',
+    publishable: false, outputs: config.outputs, files: []}));
+  const incomplete = spawnSync(process.execPath, [cli, 'review', file], {encoding: 'utf8'});
+  assert.notEqual(incomplete.status, 0);
+  assert.match(incomplete.stderr, /Incomplete launch manifest inventory/);
+  await fs.writeFile(audit, JSON.stringify({stage: 'awaiting-human-review', oldSuccessfulResult: true}));
+  const invalid = structuredClone(packs);
+  delete invalid['en-IN'].ui.variables;
+  await fs.writeFile(path.join(dir, 'locales.json'), JSON.stringify(invalid));
+  const preflight = spawnSync(process.execPath, [cli, 'review', file], {encoding: 'utf8'});
+  assert.notEqual(preflight.status, 0);
+  assert.match(preflight.stderr, /variables/);
+  const preflightFailure = JSON.parse(await fs.readFile(audit));
+  assert.equal(preflightFailure.stage, 'failed');
+  assert.equal(preflightFailure.oldSuccessfulResult, undefined);
 });
 
 test('newly generated media is staged into an existing render bundle before playback', async () => {
@@ -215,7 +359,7 @@ test('real assembly preserves frames, silent branding and narration with brandin
       {width: 160, height: 90})).frames, 12);
   });
 
-test('Chromium renders PNG watermarks, disables them and rejects overflowing text',
+test('Chromium checks watermarks, multiline outros, channel artwork and text overflow',
   {skip: process.env.REEL_RENDER_TESTS !== '1'}, async () => {
     const {default: ffmpeg} = await import('ffmpeg-static');
     const {bundle} = await import('@remotion/bundler');
@@ -253,4 +397,31 @@ test('Chromium renders PNG watermarks, disables them and rejects overflowing tex
     assert.ok(unmarked[0] < 40 && unmarked[1] < 40);
     props.brand.watermark = {...config.brand.watermark, width: 100, text: 'W'.repeat(28)};
     await assert.rejects(() => capture('overflow'), /overflow/);
+    props.brand = structuredClone(config.brand);
+    props.frames = 150;
+    for (const locale of Object.keys(packs)) {
+      props.text = packs[locale].ui.outro;
+      for (const format of Object.keys(FORMATS)) {
+        props.layout = prepareProduction(spec, {format}).layout;
+        await capture(`outro-${format}-${locale}`);
+      }
+    }
+    for (const [kind, width, height] of [
+      ['avatar', 800, 800], ['banner', 2560, 1440], ['cover', 1080, 1920], ['cover', 1280, 720],
+    ]) {
+      const inputProps = {kind, width, height, brand: config.brand.name, title: spec.title,
+        tagline: config.launch.tagline, pattern: packs['en-IN'].ui.pattern, font: props.font};
+      const composition = await selectComposition({serveUrl, id: 'ChannelArt', inputProps,
+        browserExecutable: browser, logLevel: 'error'});
+      await renderStill({composition, serveUrl, inputProps, browserExecutable: browser, frame: 0,
+        output: path.join(directory, `art-${kind}-${width}.png`), logLevel: 'error'});
+    }
+    const duplicateSpec = JSON.parse(await fs.readFile(new URL('../examples/remove-duplicates.json', import.meta.url)));
+    const duplicatePacks = JSON.parse(await fs.readFile(new URL('../examples/remove-duplicates.locales.json', import.meta.url)));
+    const inputProps = {project: {...localize(prepareProduction(duplicateSpec, {format: 'landscape'}), duplicatePacks.en),
+      preview: true, font: props.font, brandConfig: config.brand}};
+    const composition = await selectComposition({serveUrl, id: 'RegionalReel', inputProps,
+      browserExecutable: browser, logLevel: 'error'});
+    await renderStill({composition, serveUrl, inputProps, browserExecutable: browser, frame: 0,
+      output: path.join(directory, 'cold-font-first-frame.png'), logLevel: 'error'});
   });

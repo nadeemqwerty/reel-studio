@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "channel-intro",
+  "kind": "intro",
+  "brand": "InterviewReel",
+  "formats": ["portrait", "landscape"],
+  "maxDurationSeconds": 40,
+  "outroSeconds": 5,
+  "scenes": [
+    {
+      "kind": "hook",
+      "eyebrow": "SOFTWARE ENGINEERING INTERVIEWS",
+      "title": "Know the answer.\nBut why?",
+      "detail": "Understand it. Don't just memorise it.",
+      "phrases": ["Know the solution, but struggle to explain why it works?"]
+    },
+    {
+      "kind": "brand",
+      "eyebrow": "SWE PREP, MADE VISUAL",
+      "title": "Meet\nInterviewReel.",
+      "detail": "See the idea. Understand the why.",
+      "phrases": ["Meet Interview Reel.", "Interview prep, made visual."]
+    },
+    {
+      "kind": "dsa",
+      "eyebrow": "PATTERNS / WALKTHROUGHS / CHALLENGES",
+      "title": "See the pattern.\nSolve the problem.",
+      "detail": "Clear steps. Quick refreshers. Small challenges.",
+      "phrases": ["Clear explanations. Patterns you can recognise.", "Quick challenges to test yourself."]
+    },
+    {
+      "kind": "roadmap",
+      "eyebrow": "FROM CODE TO SYSTEMS",
+      "title": "Beyond coding.",
+      "detail": "DSA patterns and system design.\nMade visual.",
+      "phrases": ["From data structures and algorithms to system design."]
+    },
+    {
+      "kind": "cta",
+      "eyebrow": "BUILD UNDERSTANDING",
+      "title": "Learn. Practice.\nInterview better.",
+      "detail": "What should we explain next?",
+      "phrases": ["Don't just memorise the answer. Understand the idea.", "Follow or subscribe. Comment your next topic."]
+    }
+  ],
+  "upload": {
+    "title": "Meet InterviewReel | SWE Interview Prep, Made Visual",
+    "description": "Welcome to InterviewReel: software engineering interview prep, made visual.\n\nExplore DSA patterns and system design with clear walkthroughs, quick refreshers and challenges. Understand the idea instead of just memorising an answer.\n\nFollow or subscribe, and comment with the topic you want explained next.\n\nOriginal visuals with AI-generated narration.",
+    "socialCaption": "Know the answer, but struggle to explain why it works?\n\nMeet InterviewReel: SWE interview prep, made visual. DSA patterns, system design and quick challenges.\n\nFollow and comment your next topic.\n\n#InterviewReel #SWEInterview #CodingInterview #DSA #SystemDesign",
+    "pinnedComment": "What should we explain next? Share a DSA problem or a system design topic."
+  }
+}

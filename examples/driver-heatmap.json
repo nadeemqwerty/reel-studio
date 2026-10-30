@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "driver-heatmap",
+  "kind": "heatmap",
+  "brand": "InterviewReel",
+  "formats": ["portrait", "landscape"],
+  "maxDurationSeconds": 110,
+  "outroSeconds": 5,
+  "scenes": [
+    {"kind": "hook", "eyebrow": "UBER-STYLE / ILLUSTRATIVE DESIGN", "title": "Where are\nall the drivers?", "detail": "A crowd leaves. Ride requests spike.\nThe map needs fresh driver counts.", "phrases": ["A stadium empties. Thousands of people request a ride.", "How can a map show where drivers are right now?"]},
+    {"kind": "cells", "eyebrow": "1 / LOCATION TO CELL", "title": "Divide the city.\nBucket locations.", "detail": "Location -> cell ID\nOne driver belongs to one current cell.", "phrases": ["Divide the city into small cells.", "Map each driver's location to a cell identifier."]},
+    {"kind": "stream", "eyebrow": "2 / STREAM THE UPDATES", "title": "Update state.\nDon't recount.", "detail": "Driver updates -> stream -> workers\nKafka is one possible stream technology.", "phrases": ["Send location updates through a stream, such as Kafka.", "Workers update state instead of recounting every driver."]},
+    {"kind": "move", "eyebrow": "3 / DRIVER STATE + CELL COUNTS", "title": "Leave one cell.\nEnter another.", "detail": "Keep driver -> latest cell.\nAtomically decrement old and increment new.", "phrases": ["Keep each driver's latest cell, plus a count per cell.", "Cross a boundary: subtract from one cell, add to the other."]},
+    {"kind": "repeat", "eyebrow": "PITFALL / MESSAGES ARE NOT DRIVERS", "title": "Three updates.\nStill one driver.", "detail": "Same cell: refresh freshness, not the count.\nReject duplicate or older sequence numbers.", "phrases": ["But count drivers, not messages.", "Repeated updates in the same cell must not add another driver."]},
+    {"kind": "expiry", "eyebrow": "PITFALL / STALE LOCATIONS", "title": "No updates?\nExpire stale state.", "detail": "Illustrative 30-second timeout.\nA worker removes state and decrements the count.", "phrases": ["If updates stop, the driver might be offline.", "An expiry worker removes stale state and adjusts the count."]},
+    {"kind": "heat", "eyebrow": "4 / COUNTS BECOME COLOURS", "title": "Read the summary.\nPaint the map.", "detail": "Colour = active driver count, not demand.\nA maintained summary avoids a full recount.", "phrases": ["Colour each cell by its count.", "Read this small summary instead of every driver's location."]},
+    {"kind": "h3", "eyebrow": "REAL-WORLD CONNECTION / H3", "title": "A geographic\nindexing grid.", "detail": "Uber open-sourced H3.\nOur diagram is illustrative, not actual H3 cells.", "phrases": ["Uber's open-source H three provides a geographic grid.", "These are illustrative hexagons, not real H three cells."]},
+    {"kind": "scale", "eyebrow": "5 / SCALE BY REGION", "title": "Partition work.\nKeep updates safe.", "detail": "Within each region: atomic state + count changes.\nCross-region handoff is a separate concern.", "phrases": ["Partition the workload by region as it grows.", "Keep state and counter changes atomic within each region."]},
+    {"kind": "challenge", "eyebrow": "YOUR TURN / THINK ABOUT CORRECTNESS", "title": "What if updates\narrive late?", "detail": "Comment your ordering strategy.\nSurge pricing also needs a separate demand signal.", "phrases": ["Driver count alone does not determine surge pricing.", "How would you reject an older location update?"]}
+  ],
+  "upload": {
+    "title": "How Driver Heatmaps Work | Uber-Style System Design | InterviewReel",
+    "description": "Build an illustrative live driver heatmap: location-to-cell mapping, streamed updates, per-driver state and per-cell counts, movement, repeated messages, stale-driver expiry and regional partitioning.\n\nThis is a simplified interview design, NOT a claim about Uber's current internal architecture. Kafka is an example technology, not an assertion about Uber's stack. The animation uses a small planar hex grid, not actual H3 coordinates. The 30-second freshness timeout is illustrative.\n\nUber documents H3's role in geographic bucketing, marketplace analysis, pricing and dispatch: https://www.uber.com/blog/h3/\nH3 documentation: https://h3geo.org/docs/\n\nCorrectness notes: state and counter changes must be atomic within their ownership boundary; stale expiry tasks must not remove fresher state. Cross-region handoff, failures and reconciliation require additional design. A cache TTL alone does not decrement an aggregate counter. Driver supply alone does not determine surge pricing: demand is a separate input.\n\nYour turn: how would you handle duplicate and out-of-order location updates?\n\nOriginal visuals and script with AI-generated narration. Like, subscribe and comment your approach.",
+    "socialCaption": "A crowd leaves. Ride requests spike. How does a live driver heatmap stay fresh?\n\nCells + streamed updates + driver state + counters. The tricky parts: duplicate messages and stale locations.\n\nAn illustrative Uber-style interview design, not Uber's internal stack. Original visuals; hexagons are schematic, not real H3 cells.\n\nHow would you reject an older update? Comment your approach.\n\n#InterviewReel #SystemDesign #SWEInterview #BackendEngineering #H3",
+    "pinnedComment": "D1 moves from A to B, then an older A update arrives. What should happen? Bonus: why doesn't expiring a driver key automatically fix the cell counter?"
+  }
+}

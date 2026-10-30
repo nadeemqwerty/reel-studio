@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {compile, traceMoveZeroes, motion, validateProject, captionsFromWords, restorePunctuation, subtitleText, wavDuration} from '../lib/core.mjs';
+import {compile, traceMoveZeroes, traceRemoveElement, traceRemoveDuplicates, motion, validateProject, captionsFromWords, restorePunctuation, subtitleText, wavDuration} from '../lib/core.mjs';
 const spec = JSON.parse(fs.readFileSync(new URL('../examples/move-zeroes.json', import.meta.url)));
 
 test('stable in-place trace covers zeros, duplicates, negatives and empty arrays', () => {
@@ -83,4 +83,46 @@ test('skill has supported frontmatter and no blanket tool permission', () => {
   assert.match(skill, /^---\r?\nname: reel-studio\r?\n/);
   assert.match(skill, /\ndescription: /);
   assert.doesNotMatch(skill, /allowed-tools:/);
+});
+
+test('removal traces preserve the valid prefix and unread suffix across exhaustive small inputs', () => {
+  const arrays = [[]];
+  for (let length = 1; length <= 5; length++) {
+    arrays.push(...arrays.filter((a) => a.length === length - 1).flatMap((a) => [-1, 0, 1].map((v) => [...a, v])));
+  }
+  for (const input of arrays) {
+    for (const target of [-1, 0, 1, 2]) {
+      const trace = traceRemoveElement(input, target);
+      const expected = input.filter((v) => v !== target);
+      assert.equal(trace.keptLength, expected.length);
+      assert.deepEqual(trace.result.slice(0, trace.keptLength).map((t) => t.value), expected);
+      for (const s of trace.steps) {
+        assert.deepEqual(s.after.slice(0, s.nextW).map((t) => t.value), input.slice(0, s.nextR).filter((v) => v !== target));
+        assert.deepEqual(s.after.slice(s.nextR).map((t) => t.value), input.slice(s.nextR));
+      }
+    }
+    const sorted = input.toSorted((a, b) => a - b);
+    const trace = traceRemoveDuplicates(sorted);
+    assert.equal(trace.keptLength, new Set(sorted).size);
+    assert.deepEqual(trace.result.slice(0, trace.keptLength).map((t) => t.value), [...new Set(sorted)]);
+    for (const s of trace.steps) {
+      assert.deepEqual(s.after.slice(0, s.nextW).map((t) => t.value), [...new Set(sorted.slice(0, s.nextR))]);
+      assert.deepEqual(s.after.slice(s.nextR).map((t) => t.value), sorted.slice(s.nextR));
+    }
+  }
+  assert.throws(() => traceRemoveDuplicates([2, 1]), /sorted/);
+  assert.throws(() => traceRemoveElement([1], undefined), /target/);
+});
+
+test('new lessons conserve animated tokens and reject invalid contracts or returned lengths', () => {
+  for (const name of ['remove-element', 'remove-duplicates']) {
+    const input = JSON.parse(fs.readFileSync(new URL(`../examples/${name}.json`, import.meta.url)));
+    const project = compile(input);
+    assert.equal(validateProject(project).status, 'passed');
+    const corrupt = structuredClone(project);
+    corrupt.scenes.find((s) => s.kind === 'summary').w++;
+    assert.throws(() => validateProject(corrupt), /returned length/);
+    if (name === 'remove-element') assert.throws(() => compile({...input, target: 1.5}), /target/);
+    else assert.throws(() => compile({...input, challenge: [2, 1]}), /sorted/);
+  }
 });

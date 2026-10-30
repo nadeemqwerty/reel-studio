@@ -1,6 +1,6 @@
 {
   "en-IN": {
-    "locale": "en-IN", "brand": "PATTERN REFRESH", "voice": "af_heart", "language": "en-us",
+    "locale": "en-IN", "brand": "InterviewReel", "voice": "af_heart", "language": "en-us",
     "accent": "American English; India distribution, not an Indian-accent voice",
     "terms": {
       "read": {"id": "r", "label": "read pointer r", "spoken": "read pointer R"},
@@ -21,7 +21,40 @@
       "initial": "Initially: r = 0, w = 0.",
       "output": "EXPECTED OUTPUT",
       "constraints": "0 <= n <= 100000; 32-bit integers; target: 1 second.",
-      "outro": "Save. Practice. Repeat."
+      "outro": "Thanks for watching!\nLike and subscribe.\nComment your answer."
+    },
+    "productionPhrases": {
+      "hook": [
+        "Let's move the zeroes without mixing up the other numbers.",
+        "Keep their order, and work in the same array."
+      ],
+      "setup": [
+        "Here's the trick: use two pointers.",
+        "The {readPointer} checks each value.",
+        "The {writePointer} marks the next non-zero slot.",
+        "Start both at index zero."
+      ],
+      "zero": [
+        "See a zero? Move only the {readPointer}.",
+        "Keep the {writePointer} where it is."
+      ],
+      "swap": [
+        "Here's {value}. Swap it into the next non-zero slot.",
+        "Then move both pointers to continue."
+      ],
+      "self": [
+        "Here's {value}, already in the next non-zero slot.",
+        "Keep it there, and move both pointers to continue."
+      ],
+      "summary": [
+        "Notice how the non-zero numbers keep their order.",
+        "We read from left to right, and place them in that order.",
+        "That's one pass, with no extra array."
+      ],
+      "challenge": [
+        "Now try this array. Which value moves first?",
+        "Work it out, and comment your answer."
+      ]
     },
     "scenes": {
       "hook": {"title": "MOVE ZEROES.", "subtitle": "KEEP THE ORDER.", "phrases": ["Move zeroes last. Keep the other values in order.", "Change the same array; do not make a new one."]},
@@ -34,7 +67,7 @@
     }
   },
   "hi-IN": {
-    "locale": "hi-IN", "brand": "PATTERN REFRESH", "voice": "hf_alpha", "language": "hi",
+    "locale": "hi-IN", "brand": "InterviewReel", "voice": "hf_alpha", "language": "hi",
     "accent": "Hindi candidate; native listening review required",
     "terms": {
       "read": {"id": "r", "label": "रीड पॉइंटर r", "spoken": "रीड पॉइंटर आर"},

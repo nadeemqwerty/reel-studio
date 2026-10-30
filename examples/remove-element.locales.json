@@ -1,0 +1,75 @@
+{
+  "en": {
+    "locale": "en", "brand": "InterviewReel", "voice": "af_heart", "language": "en-us",
+    "accent": "American English; global English audience",
+    "terms": {
+      "read": {"id": "r", "label": "read pointer r", "spoken": "read pointer R"},
+      "write": {"id": "w", "label": "write pointer w", "spoken": "write pointer W"}
+    },
+    "ui": {
+      "pattern": "TWO POINTERS",
+      "input": "INPUT; target = {target}",
+      "goal": "KEEP VALUES OTHER THAN THE TARGET",
+      "scan": "{readPointer}: checks each value",
+      "write": "{writePointer}: next kept slot",
+      "swap": "Swap indices {r} and {w}.",
+      "stay": "Skip the target; keep {writePointer} in place.",
+      "swapRule": "Keep this value: swap first, then advance r and w.",
+      "zeroRule": "Skip target: advance r only. No array change.",
+      "prefix": "Green outline = kept prefix; return its length.",
+      "order": "Return k = {length}. Only the first k values count.",
+      "complexity": "O(n) time / O(1) extra space",
+      "rule": "Tail ignored. This swap solution also preserves kept order.",
+      "challenge": "Remove target {target}. Return k and the valid prefix.",
+      "cta": "Comment both. Do not physically shrink the array.",
+      "complete": "Read pointer r reached the end.",
+      "problem": "Remove target {target} in place. Return k kept values. Ignore the tail.",
+      "variables": "nums = input; n = length; target = {target}. Indices start at 0.",
+      "initial": "Start r = 0, w = 0. At the end, k = w.",
+      "output": "FIRST {length} VALUES COUNT; TAIL IGNORED",
+      "constraints": "0 <= n <= 100000; 32-bit integers; target: 1 second.",
+      "outro": "Thanks for watching!\nLike and subscribe.\nComment your answer."
+    },
+    "productionPhrases": {
+      "hook": [
+        "Remove every {target}, without making a new array.",
+        "Return the kept count. Ignore the slots after it."
+      ],
+      "setup": [
+        "The {readPointer} checks each value.",
+        "The {writePointer} marks the next kept slot.",
+        "Start both at zero. We return the write position."
+      ],
+      "zero": [
+        "Here's the target, {target}. Skip it.",
+        "Move only the {readPointer}."
+      ],
+      "swap": [
+        "Keep this {value}. Swap it into the next kept slot.",
+        "Then move both pointers to continue."
+      ],
+      "self": [
+        "Keep this {value}. It's already in the next kept slot.",
+        "Move both pointers to continue."
+      ],
+      "summary": [
+        "Return {length}. Only the first {length} values count.",
+        "The remaining slots don't matter.",
+        "That's one pass, with no extra array."
+      ],
+      "challenge": [
+        "Now remove {target} from this array.",
+        "Comment the returned length and the kept values."
+      ]
+    },
+    "scenes": {
+      "hook": {"title": "REMOVE ELEMENT.", "subtitle": "RETURN THE KEPT LENGTH.", "phrases": ["Remove the target in place. Return the kept count."]},
+      "setup": {"title": "TWO POINTERS.", "subtitle": "START BOTH AT ZERO.", "phrases": ["The {readPointer} checks values.", "The {writePointer} marks the next kept slot."]},
+      "zero": {"title": "SKIP {value}.", "subtitle": "ADVANCE ONLY r.", "phrases": ["We skipped the target and advanced only the read pointer R."]},
+      "swap": {"title": "KEEP {value}.", "subtitle": "SWAP IT FORWARD.", "phrases": ["We kept this value and advanced both pointers."]},
+      "self": {"title": "KEEP {value}.", "subtitle": "ALREADY IN PLACE.", "phrases": ["This kept value was already in place."]},
+      "summary": {"title": "RETURN k = {length}.", "subtitle": "IGNORE THE TAIL.", "phrases": ["Only the first k values count. Ignore the remaining slots."]},
+      "challenge": {"title": "YOUR TURN.", "subtitle": "REMOVE THE TARGET.", "phrases": ["Return the kept length and prefix."]}
+    }
+  }
+}

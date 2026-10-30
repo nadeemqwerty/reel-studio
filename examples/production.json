@@ -4,26 +4,28 @@
   "locales": "move-zeroes.locales.json",
   "maxDurationSeconds": 120,
   "brand": {
-    "name": "PATTERN REFRESH",
+    "name": "InterviewReel",
     "introSeconds": 1,
-    "outroSeconds": 2,
+    "outroSeconds": 5,
     "watermark": {
       "enabled": true,
       "type": "text",
-      "text": "PATTERN REFRESH",
+      "text": "InterviewReel",
       "position": "top-right",
       "width": 240,
       "opacity": 0.65
     }
   },
   "outputs": [
-    {"format": "portrait", "locale": "en-IN"},
-    {"format": "portrait", "locale": "hi-IN"},
-    {"format": "landscape", "locale": "en-IN"},
-    {"format": "landscape", "locale": "hi-IN"},
-    {"format": "square", "locale": "en-IN"},
-    {"format": "square", "locale": "hi-IN"},
-    {"format": "feed", "locale": "en-IN"},
-    {"format": "feed", "locale": "hi-IN"}
-  ]
+    {"format": "portrait", "locale": "en"},
+    {"format": "landscape", "locale": "en"}
+  ],
+  "launch": {
+    "tagline": "DSA, made visual.",
+    "bio": "Visual DSA walkthroughs, quick interview refreshers, and a challenge in every video. Learn the pattern. Try it yourself.",
+    "title": "Move Zeroes Explained | Two Pointers | InterviewReel",
+    "description": "Move all zeroes to the end in place, while preserving the order of non-zero values. Follow read pointer r and write pointer w through [0, 1, 0, 3, 12]. One pass: O(n) time and O(1) extra space.\n\nYour turn: try [0, 0, 5]. Comment your final array and which value moves first.\n\nPractice constraints: 0 <= n <= 100000, signed 32-bit integers. Target runtime: 1 second (practice target, not a hardware-independent guarantee).\n\nThanks for watching InterviewReel! Like, subscribe, and comment your answer.\n\nOriginal deterministic visuals with AI-generated narration. #DSA #CodingInterview #TwoPointers",
+    "socialCaption": "Can you move the zeroes without changing the other values' order? Follow read pointer r and write pointer w. Try [0, 0, 5] and comment your answer. Follow InterviewReel for visual interview refreshers. #DSA #CodingInterview #TwoPointers",
+    "pinnedComment": "Your turn: [0, 0, 5]. What is the final array, and which value moves first? Explain before checking other answers!"
+  }
 }

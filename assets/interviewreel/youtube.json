@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "platform": "YouTube",
+  "brand": "InterviewReel",
+  "displayName": "InterviewReel | SWE Prep",
+  "preferredHandle": "@interviewreel",
+  "confirmedHandle": null,
+  "channelUrl": null,
+  "tagline": "SWE interview prep, made visual.",
+  "description": "SWE interview prep, made visual.\n\nInterviewReel helps you prepare for software engineering interviews through clear visual explanations, quick refreshers and practical challenges.\n\nExplore DSA patterns and system design. Understand each variable, follow algorithms step by step, and reason about how systems work. Learn the idea instead of just memorising an answer.\n\nWatch Shorts for a quick refresh and landscape walkthroughs for a wider view. Try the challenge in each video and share your reasoning in the comments.\n\nSubscribe to InterviewReel for visual software engineering interview preparation.\n\nOriginal deterministic visuals with AI-generated narration. English-language content for a global audience.",
+  "language": "en",
+  "audience": "Global English-speaking software engineering interview candidates",
+  "profileImage": {
+    "file": "avatar.png",
+    "width": 800,
+    "height": 800,
+    "alt": "White IR monogram inside a cyan ring on a dark navy background."
+  },
+  "banner": {
+    "file": "youtube-banner.png",
+    "width": 2560,
+    "height": 1440,
+    "alt": "InterviewReel and SWE interview prep, made visual. centered on a dark navy background."
+  },
+  "links": [],
+  "keywords": ["SWE interview prep", "software engineering interviews", "DSA", "system design", "coding interviews", "algorithms", "two pointers", "visual explanations", "interview preparation"],
+  "recommendedUploadDefaults": {
+    "language": "en",
+    "category": "Education",
+    "visibility": "private"
+  },
+  "plannedHomeSections": ["Shorts", "DSA Walkthroughs", "System Design", "Try It Yourself"],
+  "status": "draft-not-applied",
+  "notes": [
+    "The channel covers SWE interview preparation: DSA and system design. Prepared videos are not necessarily published.",
+    "The preferred handle is a suggestion, not a claim of availability or ownership.",
+    "No live YouTube channel creation, account connection or profile update has been performed.",
+    "Profile and banner image filenames are relative to this file.",
+    "Upload copy, videos and covers are generated under outputs/move-zeroes/launch.",
+    "Use portrait-en/final.mp4 for the vertical version and landscape-en/final.mp4 for the landscape version.",
+    "The landscape thumbnail is landscape-en/thumbnail.png in the launch folder.",
+    "Keep uploads private until the full video, narration and platform-specific settings have been reviewed.",
+    "Leave links empty until the actual Instagram profile or another real public destination is confirmed.",
+    "No live app, posting schedule, full course or monetization availability is promised."
+  ]
+}

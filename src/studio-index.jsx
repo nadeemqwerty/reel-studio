@@ -1,10 +1,12 @@
 import React from 'react';
 import {Composition, registerRoot} from 'remotion';
 import {NeutralScene} from './neutral.jsx';
-import {BrandClip, StudioLesson, StudioPreview} from './studio.jsx';
+import {BrandClip, ChannelArt, StudioLesson, StudioPreview} from './studio.jsx';
 import {previewSamples} from '../lib/production.mjs';
 const metadata = (layout, durationInFrames) => ({width: layout.width, height: layout.height, durationInFrames});
 const Root = () => <>
+  <Composition id="ChannelArt" component={ChannelArt} width={800} height={800} fps={30}
+    durationInFrames={1} calculateMetadata={({props}) => ({width: props.width, height: props.height, durationInFrames: 1})}/>
   <Composition id="NeutralScene" component={NeutralScene} width={1080} height={1920} fps={30}
     durationInFrames={150} calculateMetadata={({props}) => metadata(props.scene.layout, props.scene.durationInFrames)}/>
   <Composition id="RegionalReel" component={StudioLesson} width={1080} height={1920} fps={30}

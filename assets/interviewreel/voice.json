@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "brand": "InterviewReel",
+  "channelLanguage": "en",
+  "engine": "kokoro-onnx",
+  "voice": "af_heart",
+  "language": "en-us",
+  "delivery": {
+    "mode": "connected",
+    "speed": 0.96,
+    "sentencePause": 0.14,
+    "clausePause": 0.06,
+    "alignment": "model-phoneme-sample-boundaries"
+  },
+  "settingsSource": "lib/regional.mjs: CONNECTED_ENGLISH",
+  "reference": {
+    "file": "voice-reference.wav",
+    "sha256": "de48f0ca557b499640b900b293166eb40f3b88847a2ea38a2ca4c06ded43d6d4",
+    "durationSeconds": 18.845,
+    "userDecision": "use this, seems good and workable"
+  },
+  "status": "selected-for-global-English",
+  "reviewPolicy": {"maxLessonSilenceSeconds": 1.5},
+  "consistency": "Use this narrator identity and delivery across English videos and platforms. Audition overrides must not change production defaults.",
+  "review": "The reference delivery is selected. Newly rendered full videos still require their own listening and visual review."
+}

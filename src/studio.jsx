@@ -77,12 +77,16 @@ export function StudioLesson({project, frameOverride}) {
 export function BrandClip({layout, brand, font, text}) {
   const frame = useCurrentFrame();
   const margin = Math.max(layout.safe.left, layout.safe.right, 70);
+  const height = text.split('\n').length * 80;
+  const top = layout.height / 2 - height / 2;
   return <AbsoluteFill data-reel-root style={{width: layout.width, height: layout.height,
     background: color.bg, fontFamily: 'ReelRegional, sans-serif'}}>
-    <div style={{position: 'absolute', left: margin, right: margin, top: layout.height / 2 - 100,
+    {text !== brand.name && <Box box={{x: margin, y: top - 130, width: layout.width - margin * 2, height: 55, size: 34}}
+      tint={color.scan} style={{textAlign: 'center', fontWeight: 700}}>{brand.name}</Box>}
+    <div style={{position: 'absolute', left: margin, right: margin, top: top - 50,
       height: 4, background: color.scan, transform: `scaleX(${Math.min(1, (frame + 1) / 15)})`}}/>
-    <Box box={{x: margin, y: layout.height / 2 - 50, width: layout.width - margin * 2, height: 100, size: 54}}
-      style={{textAlign: 'center', fontWeight: 800}}>{text}</Box>
+    <Box box={{x: margin, y: top, width: layout.width - margin * 2, height, size: 54}}
+      style={{textAlign: 'center', fontWeight: 800, whiteSpace: 'pre-line'}}>{text}</Box>
     <Watermark brand={brand} layout={layout}/>
     <Audit font={font} safe={layout.safe}/>
   </AbsoluteFill>;
@@ -93,7 +97,33 @@ export function StudioPreview({project}) {
   const intro = Math.round(project.brandConfig.introSeconds * 30);
   const samples = previewSamples(project);
   const end = intro + samples.length * 30;
-  if (frame < intro || frame >= end) return <BrandClip layout={project.layout} brand={project.brandConfig}
-    font={project.font} text={frame < intro ? project.brand : project.ui.outro}/>;
+  if (frame < intro || frame >= end) return <Sequence from={frame < intro ? 0 : end}>
+    <BrandClip layout={project.layout} brand={project.brandConfig}
+      font={project.font} text={frame < intro ? project.brand : project.ui.outro}/>
+  </Sequence>;
   return <StudioLesson project={{...project, preview: true}} frameOverride={previewFrame(project, frame)}/>;
+}
+
+export function ChannelArt({width, height, kind, brand, tagline, title, pattern, font}) {
+  const avatar = kind === 'avatar';
+  const banner = kind === 'banner';
+  const margin = banner ? (width - 1500) / 2 : avatar ? 100 : 90;
+  const center = height / 2;
+  const text = (y, h, size) => ({x: margin, y, width: width - margin * 2, height: h, size});
+  return <AbsoluteFill data-reel-root style={{background: color.bg, fontFamily: 'ReelRegional, sans-serif'}}>
+    {avatar ? <>
+      <div style={{position: 'absolute', inset: 80, borderRadius: '50%', border: `12px solid ${color.scan}`}}/>
+      <Box box={text(center - 155, 310, 210)} style={{textAlign: 'center', fontWeight: 800}}>
+        {brand.match(/[A-Z]/g)?.join('').slice(0, 3) ?? brand.slice(0, 2)}
+      </Box>
+    </> : <>
+      <Box box={text(center - 190, 110, banner ? 72 : 44)} tint={color.scan}
+        style={{textAlign: 'center', fontWeight: 800}}>{brand}</Box>
+      <Box box={text(center - 55, 120, banner ? 50 : 76)}
+        style={{textAlign: 'center', fontWeight: 800}}>{banner ? tagline : title}</Box>
+      {!banner && <Box box={text(center + 95, 85, 36)} tint={color.write}
+        style={{textAlign: 'center'}}>{pattern}</Box>}
+    </>}
+    <Audit font={font} safe={{left: margin, right: margin, top: 50, bottom: 50}}/>
+  </AbsoluteFill>;
 }

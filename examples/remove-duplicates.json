@@ -1,0 +1,22 @@
+{
+  "id": "remove-duplicates",
+  "algorithm": "remove-duplicates",
+  "title": "Remove Duplicates",
+  "audience": "Candidates refreshing sorted-array interview questions",
+  "objective": "Keep each distinct value once in a sorted input array; return k. Only nums[0..k-1] is the sorted unique result.",
+  "language": "en",
+  "input": [1, 1, 2, 2, 3],
+  "challenge": [1, 1, 1, 2],
+  "constraints": "0 <= n <= 100000; sorted 32-bit integers; target: 1 second; O(1) extra space",
+  "timeLimitSeconds": 1,
+  "brand": "InterviewReel",
+  "callToAction": "Comment the returned length and unique prefix.",
+  "narration": {
+    "hook": "Keep each value once in this sorted array. Return the unique count.",
+    "setup": "Read pointer R checks values. Write pointer W marks the next unique slot.",
+    "zero": "This value matches the last kept value. Advance only read pointer R.",
+    "swap": "Keep {value}. Swap it forward, then advance both pointers.",
+    "summary": "Compare against the last kept value, not the previous read slot. Return write pointer W.",
+    "challenge": "What unique prefix and length should this array return?"
+  }
+}

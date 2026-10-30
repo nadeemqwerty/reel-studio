@@ -5,8 +5,9 @@ import {spawnSync} from 'node:child_process';
 import ffmpeg from 'ffmpeg-static';
 import {bundle} from '@remotion/bundler';
 import {renderMedia, renderStill, selectComposition} from '@remotion/renderer';
+import {renderConcurrency, withRenderBrowser} from './render-runtime.mjs';
 import {compile, validateProject, subtitleText, wavDuration, FPS} from '../lib/core.mjs';
-import {LOCALES, localize, applyTiming, neutralScene, geometry} from '../lib/regional.mjs';
+import {LOCALES, localize, applyTiming, neutralScene, geometry, resolveLocale} from '../lib/regional.mjs';
 import {diagramTransform} from '../lib/production.mjs';
 import {browserPath, execute, inspectEncoded, evidence, hash, json, write, exists} from './reel.mjs';
 
@@ -102,19 +103,22 @@ const saveRecord = (dir, record) => write(path.join(dir, 'lifecycle.json'), reco
 
 async function narrate(projects, packs, inventory, out) {
   const settings = {engine: 'kokoro-onnx', model: assets[0], voices: assets[1], dependencies: inventory,
-    providerSha256: await digest(neuralScript), speed: 1, gapSeconds: 0.15, peakLimit: 0.9,
-    alignment: 'synthesized-phrase-sample-boundaries'};
+    providerSha256: await digest(neuralScript), peakLimit: 0.9};
+  const deliveries = Object.fromEntries(projects.map((project) => [project.locale,
+    project.speechDelivery ?? {mode: 'phrases', speed: 1, gapSeconds: 0.15,
+      alignment: 'synthesized-phrase-sample-boundaries'}]));
   const jobs = new Map();
   const speech = {};
   for (const project of projects) {
     speech[project.locale] = {};
     for (const scene of project.scenes) {
       const pack = packs[project.locale];
-      const fingerprint = hash(JSON.stringify({settings, phrases: scene.phrases, voice: pack.voice, language: pack.language}));
+      const delivery = deliveries[project.locale];
+      const fingerprint = hash(JSON.stringify({settings, delivery, phrases: scene.phrases, voice: pack.voice, language: pack.language}));
       const wav = path.join(publicDir, 'audio', `${fingerprint}.wav`);
       const metadata = path.join(publicDir, 'audio', `${fingerprint}.json`);
       if (!(await validCache(wav, fingerprint) && await validCache(metadata, fingerprint))) {
-        jobs.set(fingerprint, {id: `${project.locale}/${scene.id}`, phrases: scene.phrases,
+        jobs.set(fingerprint, {...delivery, id: `${project.locale}/${scene.id}`, phrases: scene.phrases,
           voice: pack.voice, language: pack.language, wav, metadata, fingerprint});
       }
       speech[project.locale][scene.id] = {wav, metadata, fingerprint};
@@ -140,7 +144,7 @@ async function narrate(projects, packs, inventory, out) {
         fingerprint: item.fingerprint, reused: !jobs.has(item.fingerprint)};
     }
   }
-  return {speech, settings};
+  return {speech, settings: {...settings, deliveries}};
 }
 
 async function render(id, inputProps, serveUrl, browser, output, duration) {
@@ -148,7 +152,8 @@ async function render(id, inputProps, serveUrl, browser, output, duration) {
   if (composition.durationInFrames !== duration) throw new Error('Composition duration drift.');
   let last = -1;
   await renderMedia({composition, serveUrl, inputProps, browserExecutable: browser, codec: 'h264',
-    audioCodec: 'aac', pixelFormat: 'yuv420p', crf: 18, concurrency: 2, outputLocation: output, logLevel: 'error',
+    audioCodec: 'aac', pixelFormat: 'yuv420p', crf: 18, concurrency: renderConcurrency(),
+    outputLocation: output, logLevel: 'error',
     onProgress: ({progress}) => {
       const quarter = Math.floor(progress * 4);
       if (quarter > last) { last = quarter; console.log(`${id}: ${Math.round(progress * 100)}%`); }
@@ -156,9 +161,10 @@ async function render(id, inputProps, serveUrl, browser, output, duration) {
   return composition;
 }
 
-async function localizedKeyframes(project, dir, serveUrl, browser, fingerprint) {
+async function localizedKeyframes(project, dir, serveUrl, browser, fingerprint, instance) {
+  if (!instance) return withRenderBrowser(browser, (opened) => localizedKeyframes(project, dir, serveUrl, browser, fingerprint, opened));
   const composition = await selectComposition({serveUrl, id: 'RegionalReel', inputProps: {project},
-    browserExecutable: browser, logLevel: 'error'});
+    browserExecutable: browser, puppeteerInstance: instance, logLevel: 'error'});
   const frames = new Set(project.scenes.map((s) => s.startFrame));
   for (const scene of project.scenes.filter((s) => s.kind === 'step' && s.swap)) frames.add(scene.startFrame + 72);
   for (const cue of project.captions) frames.add(Math.floor((cue.from + cue.to) / 2));
@@ -167,7 +173,7 @@ async function localizedKeyframes(project, dir, serveUrl, browser, fingerprint) 
   for (const frame of [...frames].sort((a, b) => a - b)) {
     const file = path.join(dir, 'keyframes', `${frame}.png`);
     if (!await validCache(file, `${fingerprint}-${frame}`)) {
-      await renderStill({composition, serveUrl, inputProps: {project}, browserExecutable: browser,
+      await renderStill({composition, serveUrl, inputProps: {project}, browserExecutable: browser, puppeteerInstance: instance,
         frame, output: file, logLevel: 'error'});
       await seal(file, `${fingerprint}-${frame}`);
     }
@@ -176,11 +182,12 @@ async function localizedKeyframes(project, dir, serveUrl, browser, fingerprint) 
   return result;
 }
 
-async function bases(canonical, out, renderer) {
+async function bases(canonical, out, renderer, instance) {
+  if (!instance) return withRenderBrowser(renderer.browser, (opened) => bases(canonical, out, renderer, opened));
   const dir = path.join(out, 'base');
   const record = await beginRecord(dir, {schemaVersion: 2, brief: canonical.spec, kind: 'neutral-visuals'});
   try {
-    const serveUrl = await bundle({entryPoint: renderer.entryPoint ?? path.join(root, 'src', 'regional-index.jsx'), publicDir,
+    const serveUrl = await bundle({entryPoint: renderer.neutralEntryPoint ?? renderer.entryPoint ?? path.join(root, 'src', 'regional-index.jsx'), publicDir,
       outDir: path.join(cache, 'base-bundle')});
     await fs.mkdir(path.join(publicDir, 'base'), {recursive: true});
     await fs.mkdir(path.join(dir, 'keyframes'), {recursive: true});
@@ -195,11 +202,11 @@ async function bases(canonical, out, renderer) {
       const reused = await validCache(file, fingerprint) && await validCache(endpoint, fingerprint);
       const frames = scene.kind === 'step' ? (scene.swap ? [0, 72, 84, 138] : [0, 63]) : [0];
       const composition = await selectComposition({serveUrl, id: 'NeutralScene', inputProps: {scene},
-        browserExecutable: renderer.browser, logLevel: 'error'});
+        browserExecutable: renderer.browser, puppeteerInstance: instance, logLevel: 'error'});
       for (const frame of frames) {
         const still = path.join(dir, 'keyframes', `${source.id}-${frame}.png`);
         if (!await validCache(still, `${fingerprint}-${frame}`)) {
-          await renderStill({composition, serveUrl, inputProps: {scene}, browserExecutable: renderer.browser,
+          await renderStill({composition, serveUrl, inputProps: {scene}, browserExecutable: renderer.browser, puppeteerInstance: instance,
             frame, output: still, logLevel: 'error'});
           await seal(still, `${fingerprint}-${frame}`);
         }
@@ -292,7 +299,7 @@ async function seamEvidence(project, out, video, offsetFrames = 0) {
 export {setup, findPython, preflight, narrate, render, bases, localizedKeyframes, seamEvidence,
   beginRecord, seal, publicDir, assets, assetPath, neuralScript, python, digest};
 
-async function build(specFile, packFile, requested = LOCALES) {
+async function build(specFile, packFile, requested = ['en-IN', 'hi-IN']) {
   const started = Date.now();
   const spec = await json(path.resolve(specFile));
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(spec.id ?? '')) throw new Error('Invalid project id.');
@@ -310,6 +317,7 @@ async function build(specFile, packFile, requested = LOCALES) {
     const canonical = compile(spec);
     record.algorithmChecks = validateProject(canonical);
     const packs = await json(path.resolve(packFile));
+    for (const locale of requested) packs[locale] = resolveLocale(packs, locale);
     const projects = requested.map((locale) => localize(canonical, packs[locale]));
     for (const locale of requested) localeRecords.get(locale).localePack = packs[locale];
     const inventory = await preflight();
@@ -318,7 +326,8 @@ async function build(specFile, packFile, requested = LOCALES) {
       text: projects.map((p) => JSON.stringify({ui: p.ui, scenes: p.scenes, brand: p.brand})).join('\n')});
     execute(python, [neuralScript, fontRequest]);
     const browser = await browserPath();
-    const baseSources = ['src/regional-index.jsx', 'src/neutral.jsx', 'lib/core.mjs', 'lib/regional.mjs', 'package-lock.json'];
+    const baseSources = ['src/regional-index.jsx', 'src/neutral.jsx', 'lib/core.mjs', 'lib/regional.mjs',
+      'lib/geometry.mjs', 'lib/production.mjs', 'scripts/render-runtime.mjs', 'package-lock.json'];
     const baseSource = Buffer.concat(await Promise.all(baseSources.map((file) => fs.readFile(path.join(root, file)))));
     const renderer = {sourceSha256: hash(Buffer.concat([baseSource, await fs.readFile(path.join(root, 'src', 'regional.jsx'))])),
       baseSourceSha256: hash(baseSource),
@@ -394,6 +403,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     if (args[0] === 'setup') await setup();
     else if (args[0] === 'build' && args[1] && args[2]) await build(args[1], args[2], args[3]?.split(','));
-    else throw new Error('Use setup, or build <problem.json> <locales.json> [en-IN,hi-IN].');
+    else throw new Error('Use setup, or build <problem.json> <locales.json> [en,en-IN,hi-IN].');
   } catch (error) { console.error(error.stack); process.exitCode = 1; }
 }

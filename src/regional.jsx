@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame,
   delayRender, continueRender, cancelRender} from 'remotion';
 import {motion} from '../lib/core.mjs';
@@ -11,12 +11,13 @@ const Text = ({children, top, size = 40, height = 90, tint = color.text, style =
 export function Audit({neutral = false, font, safe}) {
   const frame = useCurrentFrame();
   const [handle] = useState(() => delayRender('Load and audit regional font'));
+  const fontReady = useRef(false);
   const check = () => {
     const root = document.querySelector('[data-reel-root]');
     if (neutral && root?.textContent?.trim()) throw new Error('Text leaked into neutral base.');
     for (const box of root?.querySelectorAll('[data-reel-text]') ?? []) {
       if (box.scrollWidth > box.clientWidth + 2 || box.scrollHeight > box.clientHeight + 2) {
-        throw new Error(`Text overflow: ${box.textContent}; content ${box.scrollWidth}x${box.scrollHeight}, box ${box.clientWidth}x${box.clientHeight}`);
+        throw new Error(`Text overflow: ${JSON.stringify(box.textContent)}; content ${box.scrollWidth}x${box.scrollHeight}, box ${box.clientWidth}x${box.clientHeight}`);
       }
       if (safe && root) {
         const bounds = root.getBoundingClientRect();
@@ -32,17 +33,20 @@ export function Audit({neutral = false, font, safe}) {
     }
   };
   useEffect(() => {
+    fontReady.current = false;
     (async () => {
       if (font) {
         const face = new FontFace('ReelRegional', `url("${staticFile(font)}")`, {weight: '100 900'});
         document.fonts.add(await face.load());
         await document.fonts.ready;
       }
+      fontReady.current = true;
       check();
       continueRender(handle);
     })().catch(cancelRender);
   }, [font, handle]);
   useEffect(() => {
+    if (!fontReady.current) return;
     try { check(); } catch (error) { cancelRender(error); }
   }, [frame, neutral]);
   return null;

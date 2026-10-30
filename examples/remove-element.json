@@ -1,0 +1,23 @@
+{
+  "id": "remove-element",
+  "algorithm": "remove-element",
+  "title": "Remove Element",
+  "audience": "Candidates refreshing in-place array interview questions",
+  "objective": "Remove a target value in-place; return k and keep valid values in nums[0..k-1]. The tail is ignored.",
+  "language": "en",
+  "input": [3, 2, 2, 3],
+  "target": 3,
+  "challenge": [3, 3, 2],
+  "constraints": "0 <= n <= 100000; signed 32-bit integers; target: 1 second; O(1) extra space",
+  "timeLimitSeconds": 1,
+  "brand": "InterviewReel",
+  "callToAction": "Comment the returned length and valid prefix.",
+  "narration": {
+    "hook": "Remove the target in place. Return the number of kept values.",
+    "setup": "Read pointer R checks values. Write pointer W marks the next kept slot.",
+    "zero": "Skip the target. Advance only read pointer R.",
+    "swap": "Keep {value}. Swap it forward, then advance both pointers.",
+    "summary": "Return write pointer W as the length. Ignore all slots after the valid prefix.",
+    "challenge": "Remove three. What length and prefix should you return?"
+  }
+}

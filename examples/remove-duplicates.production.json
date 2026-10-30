@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "problem": "./remove-duplicates.json",
+  "locales": "./remove-duplicates.locales.json",
+  "outputs": [{"format": "portrait", "locale": "en"}, {"format": "landscape", "locale": "en"}],
+  "maxDurationSeconds": 120,
+  "brand": {
+    "name": "InterviewReel", "introSeconds": 1, "outroSeconds": 5,
+    "watermark": {"enabled": true, "type": "text", "text": "InterviewReel", "position": "top-right", "opacity": 0.65, "width": 220}
+  },
+  "launch": {
+    "tagline": "DSA, made visual.",
+    "bio": "DSA, made visual. Quick coding interview refreshers. Learn the pattern. Try the challenge.",
+    "title": "Remove Duplicates from a Sorted Array | InterviewReel",
+    "description": "Keep each distinct value once in a sorted input array. Compare nums[r] with the last kept value nums[w-1], not the previous read slot after swaps. Return k; only the first k entries form the sorted unique result. The tail is ignored. O(n) time and O(1) extra space. Practice target: 1 second for up to 100000 sorted integers. Original deterministic visuals with AI-generated narration.",
+    "socialCaption": "Sorted input, one unique prefix. The comparison that matters is against the last KEPT value. Try [1,1,1,2]. #DSA #CodingInterview #TwoPointers #InterviewReel",
+    "pinnedComment": "For sorted nums = [1,1,1,2], what are k and the unique prefix? Why compare with nums[w-1] rather than nums[r-1] after swaps?"
+  }
+}

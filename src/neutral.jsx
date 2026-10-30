@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {AbsoluteFill, useCurrentFrame, cancelRender} from 'remotion';
 import {motion} from '../lib/core.mjs';
-import {formatValue, geometry} from '../lib/regional.mjs';
+import {formatValue, geometry} from '../lib/geometry.mjs';
 import {diagramTransform} from '../lib/production.mjs';
 
 export const color = {bg: '#101827', panel: '#1b2940', text: '#f2f6ff', muted: '#b8c6da',

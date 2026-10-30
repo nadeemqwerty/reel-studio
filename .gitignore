@@ -1,12 +1,15 @@
 node_modules/
 .cache/
+__pycache__/
 outputs/
+studio_output/
 .env
 .env.*
 !.env.example
 *.log
 *.mp4
 *.wav
+!assets/interviewreel/voice-reference.wav
 *.mp3
 *.zip
 local-settings.json

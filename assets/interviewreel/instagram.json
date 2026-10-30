@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "platform": "Instagram",
+  "brand": "InterviewReel",
+  "displayName": "InterviewReel | SWE Prep",
+  "preferredUsername": "interviewreel",
+  "confirmedUsername": null,
+  "profileUrl": null,
+  "bio": "SWE interview prep, made visual.\nDSA patterns & system design.\nVisual walkthroughs. Quick challenges.\nLearn. Practice. Interview better.",
+  "accountType": "Creator",
+  "category": "Education",
+  "showCategory": true,
+  "language": "en",
+  "audience": "Global English-speaking software engineering interview candidates",
+  "profileImage": {
+    "file": "avatar.png",
+    "width": 800,
+    "height": 800,
+    "alt": "White IR monogram inside a cyan ring on a dark navy background."
+  },
+  "website": null,
+  "websiteNote": "Leave empty until a real public destination or app is ready.",
+  "plannedHighlights": ["Start Here", "DSA Patterns", "System Design", "Try It", "Answers"],
+  "status": "draft-not-applied",
+  "notes": [
+    "The channel covers SWE interview preparation: DSA and system design. Prepared videos are not necessarily published.",
+    "The user reported creating the account; the exact username and profile URL are not yet confirmed.",
+    "Account type, category and category visibility are recommended settings, not verified live settings.",
+    "Apply manually to the existing account. No credentials belong in this file.",
+    "The avatar is original deterministic artwork. Its filename is relative to this profile file.",
+    "Per-video titles, captions and pinned comments remain in examples/production.json under launch.",
+    "The app is not launched; do not advertise a live app or add a placeholder website."
+  ]
+}

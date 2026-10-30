@@ -10,7 +10,7 @@
   "constraints": "0 <= n <= 100000; signed 32-bit integers; mutate the same array",
   "timeLimitSeconds": 1,
   "targetDurationSeconds": 60,
-  "brand": "PATTERN REFRESH",
+  "brand": "InterviewReel",
   "callToAction": "Save it. Then try the next example.",
   "narration": {
     "hook": "Zeroes last. Keep other numbers in order.",
